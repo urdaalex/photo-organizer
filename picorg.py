@@ -39,7 +39,7 @@ def move_file(src_dir, src_fn, dst_dir, dst_fn):
     os.rename(src, dst)
 
 def get_mov_timestamps(filename):
-    ''' Get the creation and modification date-time from .mov metadata.
+    ''' Returns the (creation, modification) date-time from .mov metadata.
 
         Returns None if a value is not available.
     '''
@@ -78,7 +78,12 @@ def get_mov_timestamps(filename):
             if modification_time.year < 1990:  # invalid or censored data
                 modification_time = None
 
-    return creation_time
+    return (creation_time, modification_time)
+
+def get_mp4_timestamps(fn):
+    date = os.path.getmtime(fn)
+    dt = datetime.fromtimestamp(date)
+    return dt
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -96,7 +101,11 @@ if __name__ == '__main__':
             if date:
                 move_file(path, f, os.path.join(path, date.strftime('%Y-%m-%d')), f)
         elif f.lower().endswith('.mov'):
-            date = get_mov_timestamps(os.path.join(path, f))
+            date = get_mov_timestamps(os.path.join(path, f))[0]
+            if date:
+                move_file(path, f, os.path.join(path, date.strftime('%Y-%m-%d')), f)
+        elif f.lower().endswith('.mp4'):
+            date = get_mp4_timestamps(os.path.join(path, f))
             if date:
                 move_file(path, f, os.path.join(path, date.strftime('%Y-%m-%d')), f)
             
